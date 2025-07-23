@@ -78,13 +78,16 @@ plot_strain_field <- function(x, y, field, title = "Strain", palette = terrain.c
 }
 
 # ---- Loop Over Time Points ----
-for (t in def_times) {
+def_times
+timepoints <- seq(1, 360, 20)
+for (t in timepoints) {
   strain <- compute_strain(tracks, ref_time, t)
 
-  plot_strain_field(strain$x, strain$y, strain$epsilon_xx,
-                    title = paste0("Strain εxx (t=", t, ")"))
-  plot_strain_field(strain$x, strain$y, strain$epsilon_yy,
-                    title = paste0("Strain εyy (t=", t, ")"))
+  # plot_strain_field(strain$x, strain$y, strain$epsilon_xx,
+  #                   title = paste0("Strain εxx (t=", t, ")"))
+  # plot_strain_field(strain$x, strain$y, strain$epsilon_yy,
+  #                   title = paste0("Strain εyy (t=", t, ")"))
   plot_strain_field(strain$x, strain$y, strain$epsilon_xy,
                     title = paste0("Strain εxy (t=", t, ")"))
 }
+

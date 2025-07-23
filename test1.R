@@ -87,8 +87,26 @@ timepoints <- seq(1, 360, 20)
 baseline_strain <- compute_strain(tracks, ref_time, timepoints[1])
 epsilon_xy_range <- range(baseline_strain$epsilon_xy, finite = TRUE)
 
+# ---- Compute Mean Strain for Each Time Point ----
+mean_strains <- data.frame(
+  time = numeric(0),
+  mean_xx = numeric(0),
+  mean_xy = numeric(0),
+  mean_yy = numeric(0)
+)
+
 for (t in timepoints) {
   strain <- compute_strain(tracks, ref_time, t)
+
+  mean_strains <- rbind(
+    mean_strains,
+    data.frame(
+      time = t,
+      mean_xx = mean(strain$epsilon_xx, na.rm = TRUE),
+      mean_xy = mean(strain$epsilon_xy, na.rm = TRUE),
+      mean_yy = mean(strain$epsilon_yy, na.rm = TRUE)
+    )
+  )
 
   # plot_strain_field(strain$x, strain$y, strain$epsilon_xx,
   #                   title = paste0("Strain εxx (t=", t, ")"),
@@ -100,4 +118,6 @@ for (t in timepoints) {
                     title = paste0("Strain εxy (t=", t, ")"),
                     zlim = epsilon_xy_range)
 }
+
+print(mean_strains)
 

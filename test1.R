@@ -68,10 +68,12 @@ compute_strain <- function(data, ref_time, def_time, grid_n = 100) {
 }
 
 # ---- Visualization Helper ----
-plot_strain_field <- function(x, y, field, title = "Strain", palette = terrain.colors) {
+plot_strain_field <- function(x, y, field, title = "Strain",
+                              palette = terrain.colors, zlim = NULL) {
   filled.contour(
     x, y, field,
     color.palette = palette,
+    zlim = zlim,
     plot.title = title(main = title, xlab = "x", ylab = "y"),
     plot.axes = { axis(1); axis(2) }
   )
@@ -80,14 +82,22 @@ plot_strain_field <- function(x, y, field, title = "Strain", palette = terrain.c
 # ---- Loop Over Time Points ----
 def_times
 timepoints <- seq(1, 360, 20)
+
+# Determine color scale from the first time point
+baseline_strain <- compute_strain(tracks, ref_time, timepoints[1])
+epsilon_xy_range <- range(baseline_strain$epsilon_xy, finite = TRUE)
+
 for (t in timepoints) {
   strain <- compute_strain(tracks, ref_time, t)
 
   # plot_strain_field(strain$x, strain$y, strain$epsilon_xx,
-  #                   title = paste0("Strain εxx (t=", t, ")"))
+  #                   title = paste0("Strain εxx (t=", t, ")"),
+  #                   zlim = epsilon_xy_range)
   # plot_strain_field(strain$x, strain$y, strain$epsilon_yy,
-  #                   title = paste0("Strain εyy (t=", t, ")"))
+  #                   title = paste0("Strain εyy (t=", t, ")"),
+  #                   zlim = epsilon_xy_range)
   plot_strain_field(strain$x, strain$y, strain$epsilon_xy,
-                    title = paste0("Strain εxy (t=", t, ")"))
+                    title = paste0("Strain εxy (t=", t, ")"),
+                    zlim = epsilon_xy_range)
 }
 

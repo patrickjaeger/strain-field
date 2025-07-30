@@ -8,14 +8,17 @@ library(dplyr)
 library(akima)      # For interpolation
 library(pracma)     # For gradient calculation
 library(ggplot2)
+library(tidyverse)
 
 # ---- Load Data ----
 # The example script originally generated synthetic data for two time points.
 # To work with real tracking data containing many time points we read the CSV
 # file provided with this repository.  It must contain four columns:
 # `cell_id`, `frame`, `x` and `y`.
-tracks <- read.csv("sample1.csv")
-
+tracks <- read_csv("sample1.csv")
+tracks <- filter(tracks, frame %in% seq(0, max(tracks$frame), 4))
+ggplot(tracks, aes(x, -y, color =frame)) +
+  geom_point()
 
 # Rename columns to generic names used later in the script
 colnames(tracks) <- c("id", "time", "x", "y")
@@ -26,7 +29,7 @@ tracks <- tracks %>% arrange(time, id)
 # ---- Select Reference and Deformed Time Points ----
 # The reference frame is typically the first (time = 0).  Strain fields will be
 # computed for all later frames listed in `def_times`.
-ref_time <- 0
+ref_time <- 1
 def_times <- sort(unique(tracks$time))
 def_times <- def_times[def_times > ref_time]
 
@@ -119,5 +122,5 @@ for (t in timepoints) {
                     zlim = epsilon_xy_range)
 }
 
-print(mean_strains)
+print(round(mean_strains*100,1))
 

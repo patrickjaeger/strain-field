@@ -14,9 +14,7 @@ library(ggplot2)
 library(scales)
 
 # ---- Load and prepare tracks ----
-tracks <- read_csv("sample1.csv",
-                   col_names = c("id", "frame", "x", "y"),
-                   show_col_types = FALSE)
+tracks <- read_csv("sample1.csv") %>% rename(id = cell_id)
 
 ref_frame    <- min(tracks$frame)
 target_frame <- max(tracks$frame)
@@ -71,7 +69,7 @@ tracks_corr <- tracks %>%
 
 # ---- Plot: strain field + particle positions ----
 
-p <- ggplot() +
+ggplot() +
   geom_raster(data = strain_df, aes(x, -y, fill = eps_xx), interpolate = TRUE) +
   scale_fill_viridis_c(name = expression(epsilon[xx]),
                        labels = percent_format(accuracy = 0.01)) +
@@ -84,7 +82,6 @@ p <- ggplot() +
   guides(color = guide_colorbar(title = "Frame")) +
   theme_minimal(base_size = 12)
 
-print(p)
 
 # ---- Strain summary table ----
 
@@ -116,10 +113,8 @@ applied_strain <- (frames - ref_frame) / (target_frame - ref_frame)
 
 strain_summary <- tibble(
   frame = frames,
-  `applied strain` = applied_strain,
-  `engineering strain` = eng_strain,
-  `difference between applied strain and eng. strain` =
-    applied_strain - eng_strain
+  applied_strain = applied_strain,
+  eng_strain = eng_strain,
+  delta_strain = applied_strain - eng_strain
 )
-
-print(strain_summary)
+filter(strain_summary, frame %in% seq(0, max(frame), 4)) %>% print(n = nrow(.))

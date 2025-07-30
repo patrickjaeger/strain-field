@@ -85,3 +85,41 @@ p <- ggplot() +
   theme_minimal(base_size = 12)
 
 print(p)
+
+# ---- Strain summary table ----
+
+compute_eng_strain <- function(frm, grid_n = 150) {
+  def <- filter(tracks, frame == frm)
+  m <- inner_join(ref, def, by = "id", suffix = c("_ref", "_def"))
+  if (nrow(m) == 0) return(NA_real_)
+
+  tx <- median(m$x_def - m$x_ref, na.rm = TRUE)
+  ty <- median(m$y_def - m$y_ref, na.rm = TRUE)
+
+  m <- mutate(m,
+              u = (x_def - tx) - x_ref,
+              v = (y_def - ty) - y_ref)
+
+  x_seq <- seq(min(m$x_ref), max(m$x_ref), length.out = grid_n)
+  y_seq <- seq(min(m$y_ref), max(m$y_ref), length.out = grid_n)
+
+  ui <- with(m, interp(x_ref, y_ref, u, xo = x_seq, yo = y_seq, linear = TRUE))
+  dx <- diff(ui$x[1:2])
+  grad_u <- gradient(ui$z)
+
+  mean(grad_u$X / dx, na.rm = TRUE)
+}
+
+frames <- sort(unique(tracks$frame))
+eng_strain <- vapply(frames, compute_eng_strain, numeric(1))
+applied_strain <- (frames - ref_frame) / (target_frame - ref_frame)
+
+strain_summary <- tibble(
+  frame = frames,
+  `applied strain` = applied_strain,
+  `engineering strain` = eng_strain,
+  `difference between applied strain and eng. strain` =
+    applied_strain - eng_strain
+)
+
+print(strain_summary)
